@@ -7,6 +7,7 @@
 #include <ArduinoJson.h>
 #define FASTLED_INTERNAL
 #include <FastLED.h>
+#include <StreamString.h>
 
 
 #define AP_SSID_PREFIX "REACTION_TRAINER_"
@@ -23,21 +24,15 @@
 
 
 WebServer server(80);
+String lang = "fr";
 WebSocketsServer webSocket = WebSocketsServer(81);
 
 StaticJsonDocument<128> doc;
 StaticJsonDocument<256> settings;
 
+uint8_t brightness = 100;
+CRGB groupColor = 0xffff00;
 CRGB leds[NB_LED];
-
-
-
-/**************************************************************************/
-/*  JSON load / save utils                                                         */
-/**************************************************************************/
-void loadJSONSettings(bool useDefault = false) {
-  
-}
 
 
 
@@ -67,6 +62,7 @@ bool handleFileRead(String path){
     return false;
   }
   if(path.endsWith("/")) path += "index.html";
+  //if(path.endsWith(".html")) path = "/" + lang + path;
   Serial.println("handleFileRead: " + path);
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
@@ -89,16 +85,35 @@ bool handleFileRead(String path){
 void setup(){
   Serial.begin(115200);
 
+  ///// LOAD SETTINGS FROM FILE /////
   if(!SPIFFS.begin()){
         Serial.println("An Error has occurred while mounting SPIFFS");
         return;
   }
+  File file = SPIFFS.open(SETTINGS_FILE, FILE_READ);
+  DeserializationError error = deserializeJson(settings, file);
+  file.close();
+  if(error) {
+    Serial.println(F("Failed to read file, using default settings"));
+    Serial.println(error.c_str());
+    settings.createNestedObject("settings");
+    settings["settings"]["brightness"] = 100;
+    settings["settings"]["group_color"] = "#ffff00";
+  }
+  else {
+    brightness = settings["settings"]["brightness"] | 100;
+    groupColor = htmlToCRGB(settings["settings"]["group_color"] | "#ffff00");
+  }
 
   ///// SETUP FASTLED AND DISPLAY BATTERY LEVEL /////
   FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NB_LED).setCorrection( TypicalLEDStrip );
+  FastLED.setBrightness(brightness);
+  for(int i = 0; i < NB_LED; i++) { leds[i] = groupColor; }
+  FastLED.show();
+  delay(1000);
   // TODO : Measure battery voltage and display it
 
-  delay(1000);
+  //delay(1000);
 
   ///// SETUP WIFI ACCESS POINT /////
   WiFi.mode(WIFI_AP);
@@ -106,6 +121,13 @@ void setup(){
   Serial.println("Setting AP (Access Point)…");
   char ssid[sizeof(AP_SSID_PREFIX) + 6];
   strcpy(ssid, AP_SSID_PREFIX);
+  uint64_t chipid = ESP.getEfuseMac();
+  char chipIdStr[12];
+  sprintf(chipIdStr, "%02X%02X%02X",
+          (uint8_t)(chipid >> 24),
+          (uint8_t)(chipid >> 32),
+          (uint8_t)(chipid >> 40));
+  strcat(ssid, chipIdStr);
   if(AP_PASSWORD != "")
     WiFi.softAP(ssid, AP_PASSWORD);
   else
@@ -124,18 +146,6 @@ void setup(){
   server.begin();
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
-
-  ///// LOAD SETTINGS FROM FILE /////
-  File file = SPIFFS.open(SETTINGS_FILE, FILE_READ);
-  DeserializationError error = deserializeJson(settings, file);
-  if(error) {
-    Serial.println(F("Failed to read file, using default settings"));
-    Serial.println(error.c_str());
-    loadJSONSettings(true);
-  }
-  else {
-    loadJSONSettings(false);
-  }
 }
 
 
@@ -175,19 +185,64 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
             {
               IPAddress ip = webSocket.remoteIP(num);
               Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
-              // send message to client
-              webSocket.sendTXT(num, "Connected");
+              // send current config
+              StreamString buf;
+              serializeJson(settings, buf);
+              webSocket.sendTXT(num, buf);
             }
             break;
         case WStype_TEXT:
             {
-              Serial.printf("[%u] get Text: %s\n", num, payload);
-              
-              DeserializationError error = deserializeJson(doc, payload);
-              if (error) {
-                Serial.print(F("deserializeJson() failed: "));
-                Serial.println(error.c_str());
-                return;
+              if(payload[0] == '#') {
+                switch(payload[1]) {
+                  case 'B': {
+                      brightness = (uint8_t)strtol((char*)payload + 2, NULL, 10);
+                      settings["settings"]["brightness"] = brightness;
+                      FastLED.setBrightness(brightness);
+                      //Serial.printf("set brightness to %i\n", brightness);
+                      //webSocket.broadcastTXT(payload);
+                      FastLED.show();
+                    }
+                    break;
+                  case 'C': {
+                      groupColor = htmlToCRGB((char*)payload + 2);
+                      settings["settings"]["group_color"] = crgbToHtml(groupColor);
+                      for(int i = 0; i < NB_LED; i++) { leds[i] = groupColor; }
+                      //Serial.printf("set color to %s\n", crgbToHtml(leds[0]));
+                      //webSocket.broadcastTXT(payload);
+                      FastLED.show();
+                    }
+                    break;
+                  default:
+                    break;
+                }
+              }
+              else {
+                Serial.printf("[%u] get Text: %s\n", num, payload);
+                DeserializationError error = deserializeJson(doc, payload);
+                if (error) {
+                  Serial.print(F("deserializeJson() failed: "));
+                  Serial.println(error.c_str());
+                  return;
+                }
+                serializeJsonPretty(doc, Serial);
+                Serial.println();
+                if(!doc["settings"].isNull()) {
+                  Serial.println("deserialize");
+                  deserializeJson(settings, payload);
+                  Serial.println("open file");
+                  File file = SPIFFS.open(SETTINGS_FILE, FILE_WRITE);
+                  if (!file) {
+                    Serial.printf("There was an error opening the file %s for writing\n", SETTINGS_FILE);
+                    return;
+                  }
+                  Serial.println("serialize");
+                  if (serializeJson(settings, file) == 0) {
+                    Serial.printf("Failed to write to file %s\n", SETTINGS_FILE);
+                  }
+                  file.close();
+                  Serial.println("settings saved in file");
+                }
               }
             }
       default:  

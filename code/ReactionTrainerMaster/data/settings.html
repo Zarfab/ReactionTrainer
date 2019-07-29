@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>	
+	<title>Configuration - Reaction Trainer</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<script type="application/javascript">
+		var Socket;
+		
+		function init() {
+		  Socket = new WebSocket('ws://' + window.location.hostname + ':81/');
+		  Socket.onmessage = function(event){
+			console.log(event.data);
+			if(event.data[0] === '{') {
+				var data = JSON.parse(event.data);
+				console.log(data);
+				if(typeof(data.settings) !== "undefined") {
+					console.log("load settings");
+				}
+			}
+		  }
+		}
+		function sendSettings() {
+			var settingsObj = {
+				settings : {
+					group_color: document.getElementById("group_color").value,
+					brightness: document.getElementById("brightness").value
+				}
+			};
+			Socket.send(JSON.stringify(settingsObj));
+		}
+		function sendBrightness() {
+			var data = "#B";
+			data += document.getElementById("brightness").value;
+			Socket.send(data);
+		}
+		function sendGroupColor() {
+			var data = "#C";
+			data += document.getElementById("group_color").value;
+			Socket.send(data);
+		}
+	</script>
+</head>
+<body onload="javascript:init()">
+	<header>
+		<ul>
+			<li><a href="index.html">Accueil</a></li>
+			<li><a class="active" href="config.html">Configuration</a></li>
+			<li><a href="train.html">Exercice</a></li>
+		</ul>
+	</header>
+	<div class="settings">
+		<form id="settings" onsubmit="sendSettings()">
+			<p>Couleur du groupe: <input type="color" id="group_color" value="#FFFF00" onchange="sendGroupColor()"></p>
+			<p>Luminosité : <input type="range" id="brightness" min="1" max="255" value="100" onchange="sendBrightness()"></p>
+			</br>
+			<input class="button" type="submit">
+			<input class="button" type="reset">
+		</form>
+	</div>
+</body>
+</html>
