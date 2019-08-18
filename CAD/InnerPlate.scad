@@ -19,7 +19,7 @@ module InnerPlate() {
         translate([0, 0, 3]) cylinder(d=36, h=2);
         translate([31-1.8, 0, -0.2]) roundedRect(size=[6.4, 5.2, 4.4], radius=1.6);
         translate([-31+1.8, 0, -0.2]) roundedRect(size=[6.4, 5.2, 4.4], radius=1.6);
-        translate([0, 0, 2.6]) components(tolerance=[0.3, 0.2, 0.1]);
+        translate([0, 0, 2.6]) components(tolerance=[0.4, 0.4, 0.2]);
         // space for wires
         translate([0, -9, 1]) cube([18, 4, 2], center=true);
         translate([10, -10.5, 1]) cylinder(d=6, h=2, center=true, $fn=3);

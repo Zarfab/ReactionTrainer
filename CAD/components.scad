@@ -21,8 +21,8 @@ module ledRing(nbLeds=12, diamOut=52, diamIn=36, tolerance=[0, 0, 0]) {
         // LEDs and capacitors
         for(i=[0:nbLeds-1]) {
             rotate([0, 0, i*360/nbLeds]) {
-                translate([0, (diamOut-6.6)/2, 1.6+tolerance[2]]) cube([6, 5, 1.6+tolerance[2]], center=true);
-                translate([0, (diamOut-13.6)/2, 1.3+tolerance[2]]) cube([3, 2, 1+tolerance[2]], center=true);
+                translate([0, (diamOut-6.6)/2, 1.6+tolerance[2]]) cube([6.4, 5.4, 1.6]+tolerance, center=true);
+                translate([0, (diamOut-13.6)/2, 1.3+tolerance[2]]) cube([3.2, 2.2, 1]+tolerance, center=true);
             }
         }
         // space for wires
@@ -34,7 +34,7 @@ module ledRing(nbLeds=12, diamOut=52, diamIn=36, tolerance=[0, 0, 0]) {
 module VL6180X(tolerance=[0, 0, 0]) {
     difference() {
         union() {
-            roundedRect([20.3, 17.7, 1.6] + tolerance, 1.5, $fn = 30);
+            roundedRect([20.5, 17.8, 1.6] + tolerance, 1.5, $fn = 30);
             translate([-1.5, -1.3, 0]) cube([3, 5.15, 3]+ tolerance);
             translate([0, 0, 1.25]) cube([18.7, 8.1, 2.5]+ tolerance, center=true);
             translate([4, 4.45, 1.25]) cube([3.6, 2, 2.5]+ tolerance, center=true);
@@ -83,7 +83,7 @@ module buzzer() {
 
 
 
-module components(tolerance=[0, 0, 0]) {
+module components(tolerance=[0.4, 0.4, 0.2]) {
     color([0.4,0.4,0.4]) translate([0, 0, 0.8]) rotate([0, 0, 90]) ledRing(tolerance=tolerance);
     color([1,0.4,0.4])translate([0, 32.9, -2.5]) buzzer();
     color([0.4,1,0.1])VL6180X(tolerance=tolerance);
