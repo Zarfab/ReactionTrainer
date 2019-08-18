@@ -26,4 +26,5 @@ Total cost for a single module is around 15€ without the case.
 - [FastLED](https://github.com/FastLED/FastLED) (install latest from Arduino IDE Librairies Manager)
 - [arduinoWebSockets](https://github.com/Links2004/arduinoWebSockets) (install latest - at least v 2.x.x - from Arduino IDE Librairies Manager)
 - [arduinoJson](https://github.com/bblanchon/ArduinoJson) (install latest - at least v 6.x.x - from Arduino IDE Librairies Manager)
+- [VL6180X (Polulu)](https://github.com/pololu/vl6180x-arduino) (install latest from Arduino IDE Librairies Manager)
 
