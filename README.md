@@ -12,7 +12,7 @@ These modules are developed with the aim of creating exercises to improve athlet
 |----|----|----|----|
 |Micro-controller|ESP32 D1 Mini|3,80€|
 |Distance sensor|VL6180X|2.40€|[datasheet](https://www.st.com/resource/en/datasheet/vl6180x.pdf)
-|RGB LED ring|WS2812B ring|3.30€|12 LED, outer diameter 48mm|
+|RGB LED ring|WS2812B ring|3.30€|12 LED, outer diameter 52mm|
 |Buzzer|12085 16R|0.20€|Often sold in packs of 5 or 10|
 |Battery|18650|3.00€|
 |Battery holder|For 1x 18650 cell|0.55€|
