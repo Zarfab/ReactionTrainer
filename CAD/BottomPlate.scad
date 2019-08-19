@@ -2,7 +2,11 @@ $fn = 120;
 
 module BottomPlate() {
     difference() {
-        cylinder(d1=84, d2=86, h=3);
+        union() {
+            cylinder(d1=84, d2=86, h=3);
+            translate([0,0,2.9]) cylinder(d=86, h=3.1);
+        }
+        translate([0,0,2.9]) cylinder(d=84, h=3.2);
         for(i=[0:3]) {
             rotate([0, 0, 45 + i*90]) translate([0, 37, 0.1]) {
                 translate([0, 0, -0.2]) cylinder(d=8.2, h=0.3);

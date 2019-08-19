@@ -14,18 +14,20 @@ module tore(radius_ring, radius_wire) {
 module roundBox() {
     difference() {
         union() {
-            cylinder(d=86, h=32);
-            translate([0, 0, 32]) difference() {
+            cylinder(d=86, h=34);
+            translate([0, 0, 34]) difference() {
                 cylinder(d1=86, d2=82, h=2);
-                translate([0, 0, 1])cylinder(d1=49, d2=55, h=3, center=true);
+                translate([0, 0, 1])cylinder(d1=50, d2=56, h=3, center=true);
             }
         }
-        translate([0, 0, -0.05]) cylinder(d=62, h=32.1);
-        translate([0, 0, 10.6]) cube([21.5, 77.9, 21.5], center=true);
-        translate([-4, 39-12, 21]) cube([8, 12, 5]);
+        // make the box hollow
+        translate([0, 0, -0.05]) cylinder(d=62, h=34.1);
+        // add space for battery holder (18650)
+        translate([0, 0, 10.6]) cube([21.8, 78.3, 22.4], center=true);
+        translate([0, 0, 22]) cube([6, 78.4, 6], center=true);
         // space for switch
-        translate([0, -34.5, 24]) cube([20, 12, 6], center=true);
-        translate([0, -38, 24]) cube([8, 12, 4], center=true);
+        translate([0, -33.8, 26]) cube([20, 12, 6], center=true);
+        translate([0, -38, 26]) cube([8, 12, 4], center=true);
         for(i=[0:3]) {
             rotate([0, 0, 45 + i*90]) translate([0, 37, -0.1]) {
                 cylinder(d=7.8, h=0.5);
@@ -33,16 +35,20 @@ module roundBox() {
                 translate([0, 0, 9.4])cylinder(d1=4.6, d2=4.4, h=10);
             }
         }
-        translate([0, 32.9, 20]) cylinder(d=12.2, h=16);
-        translate([-6.1, 24, 20]) cube([12.2, 12, 6]);
+        translate([0, 34, -0.5]) cylinder(d=12.8, h=38);
+        translate([-6.4, 21, 20]) cube([12.8, 12, 14]);
+        translate([0,0,-0.1])difference() {
+            cylinder(d=88, h=3);
+            cylinder(d=83, h=3);
+        }
     }
     
-    translate([31-1.8, 0, 0]) roundedRect(size=[6, 4.8, 32], radius=1.6);
-    translate([-31+1.8, 0, 0]) roundedRect(size=[6, 4.8, 32], radius=1.6);
+    translate([31-1.8, 0, 0]) roundedRect(size=[6, 4.8, 34], radius=1.6);
+    translate([-31+1.8, 0, 0]) roundedRect(size=[6, 4.8, 34], radius=1.6);
 }
 
 roundBox();
-//#translate([0, 0, 28.4]) components();
-//#translate([0, 0, 30.4]) TopPlate();
-//#translate([0, 0, 25.8]) InnerPlate();
+//#translate([0, 0, 30.4]) components();
+//#translate([0, 0, 32.4]) TopPlate();
+//#translate([0, 0, 27.8]) InnerPlate();
 //#translate([0, 0, -3]) BottomPlate();

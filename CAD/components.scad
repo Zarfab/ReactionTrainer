@@ -64,8 +64,8 @@ module d1Mini32(tolerance=[0, 0, 0]) { // whole size 31.5 x 39
     translate([0, -17.5, -0.7]) cube([7.7, 5.7, 4.1]+tolerance, center=true);
     translate([0, -13, -0.59]) cube([20, 12, 1.2]+tolerance, center=true);
     translate([10, -19, -3.25]) cube([3.5, 4.5, 3.3]+tolerance);
-    translate([13.15, 0, 2.5]) cube([5.2, 26, 2.2]+tolerance, center=true);
-    translate([-13.15, 0, 2.5]) cube([5.2, 26, 2.2]+tolerance, center=true);
+    //translate([13.15, 0, 2.4]) cube([5.2, 26, 1.82]+tolerance, center=true);
+    translate([-13.15, 0, 2.4]) cube([5.2, 26, 3.82]+tolerance, center=true);
 }
 
 
@@ -85,7 +85,7 @@ module buzzer() {
 
 module components(tolerance=[0.4, 0.4, 0.2]) {
     color([0.4,0.4,0.4]) translate([0, 0, 0.8]) rotate([0, 0, 90]) ledRing(tolerance=tolerance);
-    color([1,0.4,0.4])translate([0, 32.9, -2.5]) buzzer();
+    color([1,0.4,0.4])translate([0, 34, -2.5]) buzzer();
     color([0.4,1,0.1])VL6180X(tolerance=tolerance);
     color([0.0,0.4,1])translate([0, 0, -4]) rotate([0, 0, 90])d1Mini32(tolerance=tolerance);
 }
