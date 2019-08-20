@@ -37,10 +37,10 @@ module roundBox() {
         }
         translate([0, 34, -0.5]) cylinder(d=12.8, h=38);
         translate([-6.4, 21, 20]) cube([12.8, 12, 14]);
-        translate([0,0,-0.1])difference() {
+        /*translate([0,0,-0.1])difference() {
             cylinder(d=88, h=3);
             cylinder(d=83, h=3);
-        }
+        }*/
     }
     
     translate([31-1.8, 0, 0]) roundedRect(size=[6, 4.8, 34], radius=1.6);
