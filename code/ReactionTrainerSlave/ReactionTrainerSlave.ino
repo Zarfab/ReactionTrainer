@@ -13,9 +13,9 @@
 #define AP_PASSWORD "" // let empty if you don't want to use a password
 
 
-#define BATTERY_MEASURE_PIN 26
-#define BUZZER_PIN 18
-#define LED_PIN 16
+#define BATTERY_MEASURE_PIN 34
+#define BUZZER_PIN 19
+#define LED_PIN 23
 #define NB_LED 12
 
 
