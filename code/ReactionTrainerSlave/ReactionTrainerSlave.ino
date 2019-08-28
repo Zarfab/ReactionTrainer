@@ -4,7 +4,7 @@
 #include <StreamString.h>
 #include "ReactionTrainerSlave.h"
 
-#define AP_SSID_PREFIX "REACTION_TRAINER_"
+#define AP_SSID_PREFIX "REACT_T"
 #define AP_PASSWORD "PainIsComing"
 
 #define BOOT_COLOR          CRGB::White
@@ -96,7 +96,7 @@ void setup()
   FastLED.show();
   delay(100);
 
-  webSocket.begin("192.168.4.1", 81, "/");
+  webSocket.begin("192.168.4.1", 8025, "/rt");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
 }

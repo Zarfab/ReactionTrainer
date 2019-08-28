@@ -3,7 +3,16 @@
 ReactionTrainerSlave::ReactionTrainerSlave() :
   brightness(100), groupColor(0xff0000), shotT0(-1)
 {
+  defaultShot.distanceThreshold = 200;
+  defaultShot.timeout = 4000;
+  defaultShot.order = SIMULTANEOUS;
   
+  defaultShot.colorDuration = 1500;
+  defaultShot.colorPalette[0] = CRGB::Blue;
+  defaultShot.colorAnim = COLOR_ANIM_NONE;
+  
+  defaultShot.soundDuration = 0;
+  defaultShot.soundFreq = -1;
 }
 
 
@@ -14,7 +23,7 @@ void ReactionTrainerSlave::init()
   FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NB_LED).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(brightness);
   showBatteryLevel();
-  delay(1000);
+  FastLED.delay(1000);
   // setul VL6180X sensor
   sensor.init();
   sensor.configureDefault();
@@ -45,7 +54,46 @@ String ReactionTrainerSlave::update()
 
 void ReactionTrainerSlave::handleJson(const JsonObject& doc)
 {
+  JsonVariant brightnessJson = doc["brightness"];
+  JsonVariant groupColorJson = doc["groupColor"];
+  if(!brightnessJson.isNull() && !groupColorJson.isNull()) {
+    brightness = brightnessJson.as<uint8_t>();
+    groupColor = groupColorJson.as<int>();
+    FastLED.setBrightness(brightness);
+    fill_solid(leds, NB_LED, groupColor);
+    FastLED.show();
+    FastLED.delay(1000);
+  }
+  else
+  {
+    shot.distanceThreshold = doc["distanceThreshold"] | defaultShot.distanceThreshold;
+    shot.timeout = doc["timeout"] | defaultShot.timeout;
+    shot.order = doc["order"].as<uint8_t>() | defaultShot.order;
   
+    shot.colorDuration = doc["colorDuration"] | defaultShot.colorDuration;
+    shot.colorAnim = doc["colorAnim"].as<uint8_t>() | defaultShot.colorAnim;
+    JsonArray palette = doc["colorPalette"];
+    if(palette.isNull())
+    {
+      shot.colorPalette =  defaultShot.colorPalette;
+    }
+    else
+    {
+      int i = 0;
+      for(JsonVariant v : palette) 
+      {
+        shot.colorPalette[i] = v.as<int>();
+        i++;
+        if(i == 16) break;
+      }
+      for(i; i < 16; i++) {
+         shot.colorPalette[i] = CRGB::Black;
+      }
+    }
+  
+    shot.soundDuration = doc["soundDuration"] | defaultShot.soundDuration;
+    shot.soundFreq = doc["soundFreq"] | defaultShot.soundFreq;
+  }
 }
 
 
@@ -55,12 +103,12 @@ void ReactionTrainerSlave::showBatteryLevel()
   // read VCC
   int rawVal = analogRead(VCC_MEASURE_PIN);
   int mvVal = round((rawVal * 3300.0 * 2) / 4096.0); // * 2 because of resitor divider
-  Serial.printf("VCC = %dmV\n", batteryLevel);
+  Serial.printf("VCC = %dmV\n", mvVal);
   
   int localLevel = constrain(mvVal, LOW_VCC, HIGH_VCC);
-  int pos = map(localLevel, LOW_VCC, HIGH_VCC, 1, NB_LEDS-2);
+  int pos = map(localLevel, LOW_VCC, HIGH_VCC, 1, NB_LED-2);
     
-  for (int i = NB_LEDS-1; i >= 0; i--){
+  for (int i = NB_LED-1; i >= 0; i--){
     if (i < pos)
     {
       if (i < 3)

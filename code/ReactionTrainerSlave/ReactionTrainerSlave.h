@@ -17,22 +17,17 @@
 
 
 
-enum ShotEventOrder
-{
-  SIMULTANEOUS,
-  COLOR_BEFORE,
-  SOUND_BEFORE
-};
+#define SIMULTANEOUS 0
+#define COLOR_BEFORE 1
+#define SOUND_BEFORE 2
 
-enum ColorAnimation
-{
-  STILL,
-  BLINK,
-  TIMER,
-  STOPWATCH,
-  LOADING,
-  WHEEL
-};
+#define COLOR_ANIM_NONE 0
+#define COLOR_ANIM_STILL 1
+#define COLOR_ANIM_BLINK 2
+#define COLOR_ANIM_TIMER 3
+#define COLOR_ANIM_STOPWATCH 4
+#define COLOR_ANIM_LOADING 5
+#define COLOR_ANIM_WHEEL 6
 
 
 
@@ -40,11 +35,11 @@ struct Shot
 {
   uint16_t distanceThreshold; // max distance to activate sensor in mm (30 - 250)
   uint32_t timeout; // time to wait before sending failed message (ms)
-  ShotEventOrder order;
+  uint8_t order;
   
   uint32_t colorDuration; // how long color animation is playing (ms)
   CRGBPalette16 colorPalette; // colors to display during animation
-  ColorAnimation coloAnim; // type of animation
+  uint8_t colorAnim; // type of animation
   
   uint32_t soundDuration; // how long sound animation is playing (ms)
   int32_t soundFreq;
@@ -56,6 +51,7 @@ class ReactionTrainerSlave
 {
   protected:
     Shot shot;
+    Shot defaultShot;
     int64_t shotT0;
     
     uint8_t brightness = 100;
@@ -72,9 +68,5 @@ class ReactionTrainerSlave
     void handleJson(const JsonObject& doc);
     void showBatteryLevel();
 };
-
-/*CRGB htmlToCRGB(const char* htmlString) {
-  return (int) strtol(htmlString + 1, NULL, 16);
-}*/
 
 #endif // REACTION_TRAINER_SLAVE_H
