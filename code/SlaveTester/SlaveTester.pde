@@ -1,20 +1,22 @@
-import processing.serial.*;
+import websockets.*;
 
-Serial serial;
+WebsocketServer ws;
 
+JSONObject json;
 
 
 void setup() 
 {
   size(200, 200);
-  printArray(Serial.list());
-  serial = new Serial(this, Serial.list()[1], 115200);
+  ws= new WebsocketServer(this, 81, "/");
 }
 
 
 
 void draw() {
-  if ( serial.available() > 0) {  // If data is available,
-    print(serial.read());         // read it and store it in val
-  }
+}
+
+
+void webSocketServerEvent(String msg){
+ println(msg);
 }
