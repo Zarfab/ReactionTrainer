@@ -4,13 +4,14 @@ import controlP5.*;
 
 WebsocketServer ws;
 
-boolean useSerial = false;
+boolean useSerial = true;
 Serial serial;
 
 JSONObject json;
 ControlP5 cp5;
 PaletteItem palette[];
-
+int paletteIndexMouseDown = -1;
+int paletteIndexMouseUp = -1;
 
 void setup() 
 {
@@ -87,7 +88,10 @@ void setup()
   cp5.addColorWheel("paletteColor" , 20 , 320 , 180 )
     .setRGB(color(168, 168, 24));
   palette = new PaletteItem[16];
-  for(int i = 0; i < 16; i++) palette[i] = new PaletteItem();
+  int paletteItemH = (height - 240 - 20) / 16;
+  for(int i = 0; i < 16; i++) {
+    palette[i] = new PaletteItem(220, 240 + i * paletteItemH, 80, paletteItemH);
+  }
   
   // create a toggle and change the default look to a (on/off) switch look
   cp5.addToggle("useSound")
@@ -118,7 +122,7 @@ void setup()
 
 
 
-
+/*
 public void useSound(boolean value) {
   if(value) {
     cp5.get("soundDuration").show();
@@ -127,6 +131,15 @@ public void useSound(boolean value) {
   else {
     cp5.get("soundDuration").hide();
     cp5.get("soundFreq").hide();
+  }
+}*/
+
+
+public void paletteColor(int c) {
+  for(int i = 0; i < 16; i++) {
+    if(palette[i].selected) {
+      palette[i].c = c;
+    }
   }
 }
 
@@ -175,9 +188,8 @@ void draw() {
   line(width/2, height - 40, width, height - 40);
   line(width/2, 230, width/2, height);
   
-  int paletteItemH = (height - 240 - 20) / 16;
   for(int i = 0; i < 16; i++) {
-    palette[i].draw(220, 240 + i * paletteItemH, 80, paletteItemH);
+    palette[i].draw();
   }
   if(useSerial) {
     while (serial.available() > 0) {
@@ -194,11 +206,36 @@ void webSocketServerEvent(String msg){
 
 
 void mousePressed() {
-  
+  paletteIndexMouseDown = -1;
+  for(int i = 0; i < 16; i++) {
+    if(palette[i].mouseOver()) {
+      paletteIndexMouseDown = i;
+      return;
+    }
+  }
 }
 
-
 void mouseReleased() {
-  
-  
+  boolean mouseOverPaletteColor = mouseX >= 20 && mouseY >= 320 &&
+        mouseX <= 20 + 180 && mouseY <= 320 + 180;
+  if(!mouseOverPaletteColor) {
+    paletteIndexMouseUp = -1;
+    for(int i = 0; i < 16; i++) {
+      if(palette[i].mouseOver()) {
+        paletteIndexMouseUp = i;
+        break;
+      }
+    }
+    if(paletteIndexMouseUp < paletteIndexMouseDown) {
+      int temp = paletteIndexMouseUp;
+      paletteIndexMouseUp = paletteIndexMouseDown;
+      paletteIndexMouseDown = temp;
+    }
+    for(int i = 0; i < 16; i++) {
+      if(paletteIndexMouseDown >= 0 && i >= paletteIndexMouseDown && i <= paletteIndexMouseUp)
+        palette[i].selected = true;
+      else
+        palette[i].selected = false;
+    }
+  }
 }
