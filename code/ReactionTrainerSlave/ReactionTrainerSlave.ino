@@ -1,7 +1,6 @@
 #include <WiFi.h>
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
-#include <StreamString.h>
 #include "ReactionTrainerSlave.h"
 
 #define AP_SSID_PREFIX "Obj"

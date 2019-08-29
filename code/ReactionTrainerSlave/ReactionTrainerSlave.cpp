@@ -89,12 +89,13 @@ String ReactionTrainerSlave::update()
     
     // read sensor value
     uint16_t val = sensor.readRangeSingle();
-    if (val <= shot.distanceThreshold) {
-      Serial.printf("got touched in %d ms\n", reactTime);
-      shotT0 = -1;
-    }
-    if(reactTime > shot.timeout) {
-      Serial.println("Not touched in timeout");
+    if (val <= shot.distanceThreshold || reactTime > shot.timeout) {
+      StaticJsonDocument<64> doc;
+      doc["result"] = val <= shot.distanceThreshold? 1 : 0;
+      doc["reactionTime"] = reactTime;
+      char buf[64];
+      serializeJson(doc, buf);
+      str += buf;
       shotT0 = -1;
     }
   }

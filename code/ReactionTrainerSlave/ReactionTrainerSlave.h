@@ -2,6 +2,7 @@
 #define REACTION_TRAINER_SLAVE_H
 
 #include <ArduinoJson.h>
+#include <StreamString.h>
 #define FASTLED_INTERNAL
 #include <FastLED.h>
 #include <Wire.h>
