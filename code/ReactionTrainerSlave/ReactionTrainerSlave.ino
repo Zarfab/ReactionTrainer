@@ -3,8 +3,8 @@
 #include <ArduinoJson.h>
 #include "ReactionTrainerSlave.h"
 
-#define AP_SSID_PREFIX "Obj"
-#define AP_PASSWORD "JSLOSCWifi"
+#define AP_SSID_PREFIX "REACTION_TRAINER_"
+#define AP_PASSWORD "PainIsComing"
 
 #define BOOT_COLOR          CRGB::Gray
 #define WIFI_NOT_FOUND      CRGB::Orange
@@ -14,7 +14,7 @@
 #define WS_CONNECTED        CRGB::Cyan
 #define WS_DISCONNECTED     CRGB::Magenta
 
-#define JSON_OVER_SERIAL true
+#define JSON_OVER_SERIAL false
 
 
 DynamicJsonDocument doc(1024);
@@ -100,7 +100,7 @@ void setup()
     FastLED.show();
     delay(100);
   
-    webSocket.begin("192.168.1.100", 8025, "/rt");
+    webSocket.begin("192.168.4.1", 8025, "/rt");
     webSocket.onEvent(webSocketEvent);
     webSocket.setReconnectInterval(5000);
   }

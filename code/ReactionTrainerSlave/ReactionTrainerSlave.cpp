@@ -74,7 +74,7 @@ String ReactionTrainerSlave::update()
         case COLOR_ANIM_TIMER:
         {
           for(int i = 0; i < NB_LED; i++) {
-            if(i <= round(animProgress * NB_LED)) {
+            if(i <= floor(animProgress * NB_LED)) {
               leds[i] = currentColor;
             }
             else {
@@ -86,7 +86,7 @@ String ReactionTrainerSlave::update()
         case COLOR_ANIM_STOPWATCH:
         {
           for(int i = 0; i < NB_LED; i++) {
-            if(i >= round(animProgress * NB_LED)) {
+            if(i <= floor((1.0 - animProgress) * NB_LED)) {
               leds[i] = currentColor;
             }
             else {
@@ -117,6 +117,7 @@ String ReactionTrainerSlave::update()
       serializeJson(doc, buf);
       str += buf;
       shotT0 = -1;
+      fill_solid(leds, NB_LED, CRGB::Black);
     }
   }
   return str;

@@ -2,9 +2,10 @@ import websockets.*;
 import processing.serial.*;
 import controlP5.*;
 
+boolean useWS = false;
 WebsocketServer ws;
 
-boolean useSerial = false;
+boolean useSerial = true;
 Serial serial;
 
 JSONObject json;
@@ -16,13 +17,13 @@ int paletteIndexMouseUp = -1;
 void setup() 
 {
   size(640, 520);
-  ws= new WebsocketServer(this, 8025, "/rt");
+  if(useWS) ws = new WebsocketServer(this, 8025, "/rt");
   json = new JSONObject();
   
   // List all the available serial ports:
   if(useSerial) {
     printArray(Serial.list());
-    serial = new Serial(this, Serial.list()[0], 115200);
+    serial = new Serial(this, Serial.list()[1], 115200);
   }
   
   
@@ -68,16 +69,6 @@ void setup()
      .setValue(0)
      ;
 
-  String colorAnimItems[] = {"NONE", "STILL", "BLINK", "TIMER", "STOPWATCH", "LOADING", "WHEEL"};
-  cp5.addScrollableList("colorAnim")
-     .setPosition(20, 240)
-     .setSize(180, 80)
-     .setBarHeight(20)
-     .setItemHeight(20)
-     .addItems(colorAnimItems)
-     .setOpen(false)
-     .setValue(0)
-     ;
   cp5.addSlider("colorDuration")
      .setPosition(20, 270)
      .setSize(180, 20)
@@ -92,6 +83,16 @@ void setup()
   }
   cp5.addColorWheel("paletteColor" , 20 , 320 , 180 )
     .setRGB(color(168, 168, 24));
+  String colorAnimItems[] = {"NONE", "STILL", "BLINK", "TIMER", "STOPWATCH", "LOADING", "WHEEL"};
+  cp5.addScrollableList("colorAnim")
+     .setPosition(20, 240)
+     .setSize(180, 80)
+     .setBarHeight(20)
+     .setItemHeight(20)
+     .addItems(colorAnimItems)
+     .setOpen(false)
+     .setValue(0)
+     ;
   
     cp5.addSlider("soundDuration")
      .setPosition(width * 0.75 - 120, 280)
@@ -112,9 +113,16 @@ void setup()
      .setValue(true)
      .setMode(ControlP5.SWITCH)
      ;
-     
+  
+  cp5.addSlider("target")
+     .setPosition(width/2 + 20, height - 30)
+     .setSize(90, 20)
+     .setRange(0, 3)
+     .setNumberOfTickMarks(4)
+     .setValue(0)
+     ;
   cp5.addButton("SendShot")
-     .setPosition(width - 160, height - 30)
+     .setPosition(width - 140, height - 30)
      .setSize(120, 20)
      ;
 }
@@ -146,14 +154,16 @@ public void SendGroupSettings() {
   JSONObject group = new JSONObject();
   group.setInt("brightness", int(cp5.get("brightness").getValue()));
   group.setInt("groupColor", cp5.get(ColorWheel.class,"groupColor").getRGB());
+  group.setInt("target", 255);
   String toSend = group.toString();
   System.err.println(toSend);
   toSend = toSend.replaceAll("\\s+", "").replaceAll("\\t+", "").replaceAll("\\n", "");
-  ws.sendMessage(toSend);
+  if(useWS) ws.sendMessage(toSend);
   if(useSerial) serial.write(toSend);
 }
 
 public void SendShot() {
+  json.setInt("target", int(cp5.get("target").getValue()));
   json.setInt("distanceThreshold", int(cp5.get("distanceThreshold").getValue()));
   json.setInt("timeout", int(cp5.get("timeout").getValue()));
   json.setInt("order", int(cp5.get("order").getValue()));
@@ -171,7 +181,7 @@ public void SendShot() {
   json.setInt("soundFreq", freq);
   String toSend = json.toString();
   System.err.println(toSend);
-  ws.sendMessage(toSend);
+  if(useWS) ws.sendMessage(toSend);
   if(useSerial) serial.write(toSend);
 }
 
