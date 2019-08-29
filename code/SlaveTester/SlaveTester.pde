@@ -156,7 +156,7 @@ public void SendGroupSettings() {
   group.setInt("groupColor", cp5.get(ColorWheel.class,"groupColor").getRGB());
   group.setInt("target", 255);
   String toSend = group.toString();
-  System.err.println(toSend);
+  //System.err.println(toSend);
   toSend = toSend.replaceAll("\\s+", "").replaceAll("\\t+", "").replaceAll("\\n", "");
   if(useWS) ws.sendMessage(toSend);
   if(useSerial) serial.write(toSend);
@@ -180,7 +180,7 @@ public void SendShot() {
     freq = int(cp5.get("soundFreq").getValue());
   json.setInt("soundFreq", freq);
   String toSend = json.toString();
-  System.err.println(toSend);
+  //System.err.println(toSend);
   if(useWS) ws.sendMessage(toSend);
   if(useSerial) serial.write(toSend);
 }

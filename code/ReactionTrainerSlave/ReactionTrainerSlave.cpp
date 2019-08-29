@@ -1,7 +1,7 @@
 #include "ReactionTrainerSlave.h"
 
 ReactionTrainerSlave::ReactionTrainerSlave() :
-  brightness(48), groupColor(0xff0000), shotT0(-1), buzzerOn(false)
+  brightness(32), groupColor(0xff0000), shotT0(-1), buzzerOn(false)
 {
   defaultShot.distanceThreshold = 200;
   defaultShot.timeout = 4000;
@@ -96,9 +96,27 @@ String ReactionTrainerSlave::update()
         }
           break;
         case COLOR_ANIM_LOADING:
+        {
+          int firstLed = NB_LED * animTime / 492;
+          for(int i = 0; i < NB_LED; i++) {
+            if(i >= firstLed % NB_LED) {
+              leds[i] = currentColor;
+            }
+            else {
+              leds[i] = CRGB::Black;
+            }
+          }
+        }
           break;
         case COLOR_ANIM_WHEEL:
+        {
+          fill_solid(leds, NB_LED, CRGB::Black);
+          int firstLed = (NB_LED * animTime / 492) % 4;
+          for(int i = firstLed; i < NB_LED; i += 4) {
+              leds[i] = currentColor;
+          }
           break;
+        }
         default:
           break;
       }
