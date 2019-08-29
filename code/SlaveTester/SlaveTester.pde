@@ -3,7 +3,7 @@ import processing.serial.*;
 
 WebsocketServer ws;
 
-boolean useSerial = false;
+boolean useSerial = true;
 Serial serial;
 
 JSONObject json;
@@ -28,7 +28,7 @@ void draw() {
   background(0);
   if(useSerial) {
     while (serial.available() > 0) {
-      println(serial.readChar());
+      print(serial.readChar());
     }
   }
 }
@@ -63,7 +63,7 @@ void keyPressed() {
     toSend = group.toString(); 
   }
   if(toSend.length() > 1) {
-    println(toSend);
+    System.err.println(toSend);
     toSend = toSend.replaceAll("\\s+", "").replaceAll("\\t+", "").replaceAll("\\n", "");
     ws.sendMessage(toSend);
     if(useSerial) serial.write(toSend);

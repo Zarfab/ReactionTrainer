@@ -15,6 +15,8 @@
 #define WS_CONNECTED        CRGB::Cyan
 #define WS_DISCONNECTED     CRGB::Magenta
 
+#define JSON_OVER_SERIAL true
+
 
 DynamicJsonDocument doc(1024);
 WebSocketsClient webSocket;
@@ -32,86 +34,103 @@ void setup()
 
   ///// SCAN WIFI NETWORKS /////
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  fill_solid(reactionTrainer.leds, NB_LED, BOOT_COLOR);
-  FastLED.show();
-  delay(100);
-  int n = WiFi.scanNetworks();
-  Serial.println("scan done");
-  if (n == 0) 
-  {
-      Serial.println("no network found");
+  if(!JSON_OVER_SERIAL) {
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    fill_solid(reactionTrainer.leds, NB_LED, BOOT_COLOR);
+    FastLED.show();
+    delay(100);
+    int n = WiFi.scanNetworks();
+    Serial.println("scan done");
+    if (n == 0) 
+    {
+        Serial.println("no network found");
+        fill_solid(reactionTrainer.leds, NB_LED, WIFI_NOT_FOUND);
+        FastLED.show();
+        delay(5000);
+        ESP.restart();
+    } 
+    
+    String ssid = "";
+    for (int i = 0; i < n; ++i) 
+    {
+      String currentSsid = WiFi.SSID(i);
+      if(currentSsid.indexOf(AP_SSID_PREFIX) == 0) 
+      {
+        ssid = currentSsid;
+        Serial.printf("Will try to connect to %s, signal force is %i dB\n", WiFi.SSID(i), WiFi.RSSI(i));
+        fill_solid(reactionTrainer.leds, NB_LED, WIFI_CONNECTING);
+        FastLED.show();
+        break;
+      }
+      delay(10);
+    }
+    if(ssid == "") {
+      Serial.printf("no network with %s as prefix\n", AP_SSID_PREFIX);
       fill_solid(reactionTrainer.leds, NB_LED, WIFI_NOT_FOUND);
       FastLED.show();
       delay(5000);
       ESP.restart();
-  } 
-  
-  String ssid = "";
-  for (int i = 0; i < n; ++i) 
-  {
-    String currentSsid = WiFi.SSID(i);
-    if(currentSsid.indexOf(AP_SSID_PREFIX) == 0) 
-    {
-      ssid = currentSsid;
-      Serial.printf("Will try to connect to %s, signal force is %i dB\n", WiFi.SSID(i), WiFi.RSSI(i));
-      fill_solid(reactionTrainer.leds, NB_LED, WIFI_CONNECTING);
-      FastLED.show();
-      break;
     }
-    delay(10);
-  }
-  if(ssid == "") {
-    Serial.printf("no network with %s as prefix\n", AP_SSID_PREFIX);
-    fill_solid(reactionTrainer.leds, NB_LED, WIFI_NOT_FOUND);
+    
+    WiFi.begin(ssid.c_str(), AP_PASSWORD);
+    int nbTries = 0;
+    while(WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+      if(nbTries % 4 == 3) {
+        WiFi.begin(ssid.c_str(), AP_PASSWORD);
+      }
+      if(nbTries >= 20) {
+        Serial.println("impossible to connect to " + ssid + ", check if password is set correctly");
+        fill_solid(reactionTrainer.leds, NB_LED, WIFI_NOT_CONNECTED);
+        FastLED.show();
+        delay(5000);
+        ESP.restart();
+      }
+      nbTries++;
+    }
+  
+    Serial.println();
+    Serial.println("WiFi connected");
+    Serial.print("SSID: ");
+    Serial.println(WiFi.SSID());
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+    fill_solid(reactionTrainer.leds, NB_LED, WIFI_CONNECTED);
     FastLED.show();
-    delay(5000);
-    ESP.restart();
-  }
+    delay(100);
   
-  WiFi.begin(ssid.c_str(), AP_PASSWORD);
-  int nbTries = 0;
-  while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    if(nbTries % 4 == 3) {
-      WiFi.begin(ssid.c_str(), AP_PASSWORD);
-    }
-    if(nbTries >= 20) {
-      Serial.println("impossible to connect to " + ssid + ", check if password is set correctly");
-      fill_solid(reactionTrainer.leds, NB_LED, WIFI_NOT_CONNECTED);
-      FastLED.show();
-      delay(5000);
-      ESP.restart();
-    }
-    nbTries++;
+    webSocket.begin("192.168.1.100", 8025, "/rt");
+    webSocket.onEvent(webSocketEvent);
+    webSocket.setReconnectInterval(5000);
   }
-
-  Serial.println();
-  Serial.println("WiFi connected");
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-  fill_solid(reactionTrainer.leds, NB_LED, WIFI_CONNECTED);
-  FastLED.show();
-  delay(100);
-
-  webSocket.begin("192.168.1.100", 8025, "/rt");
-  webSocket.onEvent(webSocketEvent);
-  webSocket.setReconnectInterval(5000);
+  else {
+    fill_solid(reactionTrainer.leds, NB_LED, BOOT_COLOR);
+    FastLED.show();
+    delay(100);
+  }
 }
 
 
 
 void loop()
 {
-  webSocket.loop();
+  if(!JSON_OVER_SERIAL) webSocket.loop();
+  else {
+    if(Serial.available()) {
+      DeserializationError err = deserializeJson(doc, Serial);
+      if(err == DeserializationError::Ok)
+        reactionTrainer.handleJson(doc.as<JsonObject>());
+      else 
+        Serial.printf("deserializeJson() failed with code %s\n", err.c_str());
+    }
+  }
   String answer = reactionTrainer.update();
   if(answer != "")
   {
-    webSocket.sendTXT(answer);
+    if(!JSON_OVER_SERIAL) webSocket.sendTXT(answer);
+    else Serial.println(answer);
   }
   FastLED.show();
 }
