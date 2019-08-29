@@ -4,7 +4,7 @@ import controlP5.*;
 
 WebsocketServer ws;
 
-boolean useSerial = true;
+boolean useSerial = false;
 Serial serial;
 
 JSONObject json;
@@ -85,22 +85,15 @@ void setup()
      .setValue(1000)
      .getCaptionLabel().align(ControlP5.LEFT, ControlP5.BOTTOM_OUTSIDE)
      ;
-  cp5.addColorWheel("paletteColor" , 20 , 320 , 180 )
-    .setRGB(color(168, 168, 24));
   palette = new PaletteItem[16];
   int paletteItemH = (height - 240 - 20) / 16;
   for(int i = 0; i < 16; i++) {
     palette[i] = new PaletteItem(220, 240 + i * paletteItemH, 80, paletteItemH);
   }
+  cp5.addColorWheel("paletteColor" , 20 , 320 , 180 )
+    .setRGB(color(168, 168, 24));
   
-  // create a toggle and change the default look to a (on/off) switch look
-  cp5.addToggle("useSound")
-     .setPosition(width * 0.75 - 30, 240)
-     .setSize(60, 20)
-     .setValue(true)
-     .setMode(ControlP5.SWITCH)
-     ;
-  cp5.addSlider("soundDuration")
+    cp5.addSlider("soundDuration")
      .setPosition(width * 0.75 - 120, 280)
      .setSize(240, 20)
      .setRange(400, 5000)
@@ -113,6 +106,12 @@ void setup()
      .setRange(20, 880)
      .setValue(392)
      ;
+  cp5.addToggle("useSound")
+     .setPosition(width * 0.75 - 30, 240)
+     .setSize(60, 20)
+     .setValue(true)
+     .setMode(ControlP5.SWITCH)
+     ;
      
   cp5.addButton("SendShot")
      .setPosition(width - 160, height - 30)
@@ -122,7 +121,7 @@ void setup()
 
 
 
-/*
+
 public void useSound(boolean value) {
   if(value) {
     cp5.get("soundDuration").show();
@@ -132,7 +131,7 @@ public void useSound(boolean value) {
     cp5.get("soundDuration").hide();
     cp5.get("soundFreq").hide();
   }
-}*/
+}
 
 
 public void paletteColor(int c) {
