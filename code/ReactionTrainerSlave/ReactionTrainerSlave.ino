@@ -4,14 +4,16 @@
 #include <StreamString.h>
 #include "ReactionTrainerSlave.h"
 
-#define AP_SSID_PREFIX "REACT_T"
-#define AP_PASSWORD "PainIsComing"
+#define AP_SSID_PREFIX "Obj"
+#define AP_PASSWORD "JSLOSCWifi"
 
-#define BOOT_COLOR          CRGB::White
+#define BOOT_COLOR          CRGB::Gray
 #define WIFI_NOT_FOUND      CRGB::Orange
 #define WIFI_CONNECTING     CRGB::Yellow
 #define WIFI_NOT_CONNECTED  CRGB::Red
 #define WIFI_CONNECTED      CRGB::Chartreuse
+#define WS_CONNECTED        CRGB::Cyan
+#define WS_DISCONNECTED     CRGB::Magenta
 
 
 DynamicJsonDocument doc(1024);
@@ -96,7 +98,7 @@ void setup()
   FastLED.show();
   delay(100);
 
-  webSocket.begin("192.168.4.1", 8025, "/rt");
+  webSocket.begin("192.168.1.100", 8025, "/rt");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
 }
@@ -125,9 +127,11 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
     {
         case WStype_DISCONNECTED:
           Serial.printf("[WSc] Disconnected!\n");
+          fill_solid(reactionTrainer.leds, NB_LED, WS_DISCONNECTED);
           break;
         case WStype_CONNECTED:
           Serial.printf("[WSc] Connected to url: %s\n", payload);
+          fill_solid(reactionTrainer.leds, NB_LED, WS_CONNECTED);
           break;
         case WStype_TEXT:
         {

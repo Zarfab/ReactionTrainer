@@ -1,7 +1,7 @@
 #include "ReactionTrainerSlave.h"
 
 ReactionTrainerSlave::ReactionTrainerSlave() :
-  brightness(100), groupColor(0xff0000), shotT0(-1)
+  brightness(48), groupColor(0xff0000), shotT0(-1), buzzerOn(false)
 {
   defaultShot.distanceThreshold = 200;
   defaultShot.timeout = 4000;
@@ -24,10 +24,13 @@ void ReactionTrainerSlave::init()
   FastLED.setBrightness(brightness);
   showBatteryLevel();
   FastLED.delay(1000);
-  // setul VL6180X sensor
+  // setup VL6180X sensor
   sensor.init();
   sensor.configureDefault();
   sensor.setTimeout(100);
+  // setup buzzer
+  ledcSetup(buzzerChannel, 440, 8);
+  ledcAttachPin(BUZZER_PIN, buzzerChannel);
 }
 
 
@@ -36,13 +39,61 @@ String ReactionTrainerSlave::update()
 {
   String str = "";
   if(shotT0 >= 0) {
+    int64_t reactTime = millis() - shotT0;
+    // play sound
+    if(!buzzerOn && shot.soundFreq > 20 && reactTime >= shot.soundT0) {
+      ledcWriteTone(buzzerChannel, shot.soundFreq);
+      buzzerOn = true;
+    }
+    // stop sound;
+    if(buzzerOn && reactTime >= shot.soundTEnd) {
+      ledcWriteTone(buzzerChannel, 0);
+      buzzerOn = false;
+      shot.soundFreq = -1; // prevent from playing again
+    }
+    // play color animation
+    if(reactTime >= shot.colorT0 && reactTime < shot.colorTEnd) {
+      int64_t animTime = reactTime - shot.colorT0;
+      float animProgress = animTime / (float)(shot.colorDuration);
+      int paletteIndex = round(255.0 * animProgress);
+      CRGB currentColor = ColorFromPalette(shot.colorPalette, paletteIndex);
+      switch(shot.colorAnim) {
+        case COLOR_ANIM_NONE:
+          fill_solid(leds, NB_LED, shot.colorPalette[0]);
+          break;
+        case COLOR_ANIM_STILL:
+          fill_solid(leds, NB_LED, currentColor);
+          break;
+        case COLOR_ANIM_BLINK:
+        {
+          bool isBlack = animTime % 200 >= 100;
+          fill_solid(leds, NB_LED, isBlack? CRGB::Black : currentColor);
+        }
+          break;
+        case COLOR_ANIM_TIMER:
+          break;
+        case COLOR_ANIM_STOPWATCH:
+          break;
+        case COLOR_ANIM_LOADING:
+          break;
+        case COLOR_ANIM_WHEEL:
+          break;
+        default:
+          break;
+      }
+    }
+    else {
+      fill_solid(leds, NB_LED, CRGB::Black);
+    }
+    
+    // read sensor value
     uint16_t val = sensor.readRangeSingle();
+    Serial.println(val);
     if (val <= shot.distanceThreshold) {
-      uint32_t reactTime = millis() - shotT0;
       Serial.printf("got touched in %d ms\n", reactTime);
       shotT0 = -1;
     }
-    if(millis() - shotT0 > shot.timeout) {
+    if(reactTime > shot.timeout) {
       Serial.println("Not touched in timeout");
       shotT0 = -1;
     }
@@ -63,9 +114,12 @@ void ReactionTrainerSlave::handleJson(const JsonObject& doc)
     fill_solid(leds, NB_LED, groupColor);
     FastLED.show();
     FastLED.delay(1000);
+    fill_solid(leds, NB_LED, CRGB::Black);
+    FastLED.show();
   }
   else
   {
+    // configure and measure reaction time
     shot.distanceThreshold = doc["distanceThreshold"] | defaultShot.distanceThreshold;
     shot.timeout = doc["timeout"] | defaultShot.timeout;
     shot.order = doc["order"].as<uint8_t>() | defaultShot.order;
@@ -79,6 +133,7 @@ void ReactionTrainerSlave::handleJson(const JsonObject& doc)
     }
     else
     {
+      fill_solid(shot.colorPalette, 16, CRGB::Black);
       int i = 0;
       for(JsonVariant v : palette) 
       {
@@ -86,13 +141,32 @@ void ReactionTrainerSlave::handleJson(const JsonObject& doc)
         i++;
         if(i == 16) break;
       }
-      for(i; i < 16; i++) {
-         shot.colorPalette[i] = CRGB::Black;
-      }
     }
   
     shot.soundDuration = doc["soundDuration"] | defaultShot.soundDuration;
     shot.soundFreq = doc["soundFreq"] | defaultShot.soundFreq;
+
+    switch(shot.order) {
+      case COLOR_BEFORE:
+        shot.colorT0 = 0;
+        shot.colorTEnd = shot.colorDuration;
+        shot.soundT0 = shot.colorDuration;
+        shot.soundTEnd = shot.colorDuration + shot.soundDuration;
+        break;
+      case SOUND_BEFORE:
+        shot.colorT0 = shot.soundDuration;
+        shot.colorTEnd = shot.soundDuration + shot.colorDuration;
+        shot.soundT0 = 0;
+        shot.soundTEnd = shot.soundDuration;
+        break;
+      default:
+        shot.colorT0 = 0;
+        shot.colorTEnd = shot.colorDuration;
+        shot.soundT0 = 0;
+        shot.soundTEnd = shot.soundDuration;
+        break;
+    }
+    shotT0 = millis();
   }
 }
 

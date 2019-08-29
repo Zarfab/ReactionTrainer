@@ -36,6 +36,10 @@ struct Shot
   uint16_t distanceThreshold; // max distance to activate sensor in mm (30 - 250)
   uint32_t timeout; // time to wait before sending failed message (ms)
   uint8_t order;
+  uint32_t colorT0;
+  uint32_t colorTEnd;
+  uint32_t soundT0;
+  uint32_t soundTEnd;
   
   uint32_t colorDuration; // how long color animation is playing (ms)
   CRGBPalette16 colorPalette; // colors to display during animation
@@ -53,9 +57,11 @@ class ReactionTrainerSlave
     Shot shot;
     Shot defaultShot;
     int64_t shotT0;
+    bool buzzerOn;
+    int buzzerChannel = 0;
     
-    uint8_t brightness = 100;
-    CRGB groupColor = 0xff0000;
+    uint8_t brightness;
+    CRGB groupColor;
     
     VL6180X sensor;
 
