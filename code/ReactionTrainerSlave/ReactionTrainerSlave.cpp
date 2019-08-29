@@ -72,8 +72,28 @@ String ReactionTrainerSlave::update()
         }
           break;
         case COLOR_ANIM_TIMER:
+        {
+          for(int i = 0; i < NB_LED; i++) {
+            if(i <= round(animProgress * NB_LED)) {
+              leds[i] = currentColor;
+            }
+            else {
+              leds[i] = CRGB::Black;
+            }
+          }
+        }
           break;
         case COLOR_ANIM_STOPWATCH:
+        {
+          for(int i = 0; i < NB_LED; i++) {
+            if(i >= round(animProgress * NB_LED)) {
+              leds[i] = currentColor;
+            }
+            else {
+              leds[i] = CRGB::Black;
+            }
+          }
+        }
           break;
         case COLOR_ANIM_LOADING:
           break;
