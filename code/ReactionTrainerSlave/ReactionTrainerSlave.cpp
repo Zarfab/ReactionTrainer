@@ -25,9 +25,10 @@ void ReactionTrainerSlave::init()
   showBatteryLevel();
   FastLED.delay(1000);
   // setup VL6180X sensor
+  Wire.begin();
   sensor.init();
   sensor.configureDefault();
-  sensor.setTimeout(100);
+  sensor.setTimeout(200);
   // setup buzzer
   ledcSetup(buzzerChannel, 440, 8);
   ledcAttachPin(BUZZER_PIN, buzzerChannel);
@@ -88,7 +89,6 @@ String ReactionTrainerSlave::update()
     
     // read sensor value
     uint16_t val = sensor.readRangeSingle();
-    Serial.println(val);
     if (val <= shot.distanceThreshold) {
       Serial.printf("got touched in %d ms\n", reactTime);
       shotT0 = -1;
