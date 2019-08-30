@@ -97,14 +97,10 @@ String ReactionTrainerSlave::update()
           break;
         case COLOR_ANIM_LOADING:
         {
-          int firstLed = NB_LED * animTime / 492;
-          for(int i = 0; i < NB_LED; i++) {
-            if(i >= firstLed % NB_LED) {
-              leds[i] = currentColor;
-            }
-            else {
-              leds[i] = CRGB::Black;
-            }
+          fill_solid(leds, NB_LED, CRGB::Black);
+          int firstLed = (NB_LED * animTime / 492) % NB_LED;
+          for(int i = firstLed; i < firstLed + NB_LED / 2; i++) {
+            leds[i % NB_LED] = currentColor;
           }
         }
           break;
