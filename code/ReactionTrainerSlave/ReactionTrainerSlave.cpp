@@ -111,7 +111,7 @@ String ReactionTrainerSlave::update()
         case COLOR_ANIM_WHEEL:
         {
           fill_solid(leds, NB_LED, CRGB::Black);
-          int firstLed = (NB_LED * animTime / 492) % 4;
+          int firstLed = (NB_LED * animTime / 2000) % 4;
           for(int i = firstLed; i < NB_LED; i += 4) {
               leds[i] = currentColor;
           }
@@ -136,6 +136,8 @@ String ReactionTrainerSlave::update()
       str += buf;
       shotT0 = -1;
       fill_solid(leds, NB_LED, CRGB::Black);
+      ledcWriteTone(buzzerChannel, 0);
+      buzzerOn = false; 
     }
   }
   return str;
