@@ -1,5 +1,5 @@
 use<components.scad>
-use<RoundedRect.scad>
+use<BasicShapes.scad>
 
 $fn = 120;
 

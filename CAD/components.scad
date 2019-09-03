@@ -1,4 +1,4 @@
-use <RoundedRect.scad>
+use <BasicShapes.scad>
 
 module ledRing(nbLeds=12, diamOut=52, diamIn=36, tolerance=[0, 0, 0]) {
     union() {
@@ -82,12 +82,26 @@ module buzzer() {
 }
 
 
+module batteryHolder() {
+    translate([0, 0, 11])
+    difference() {
+        cube([21.4, 77.9, 22], center=true);
+        translate([0, 0, -4]) cube([22, 67, 18], center=true);
+    }
+    translate([0, -36, 23]) cube([3, 5, 3], center=true);
+    translate([0, 36, 23]) cube([3, 5, 3], center=true);
+    rotate([90, 0, 0]) translate([0, 10, 0]) cylinder(d=18, h=65.2, center=true);
+}
+
+
 
 module components(tolerance=[0.4, 0.4, 0.2]) {
     color([0.4,0.4,0.4]) translate([0, 0, 0.8]) rotate([0, 0, 90]) ledRing(tolerance=tolerance);
-    color([1,0.4,0.4])translate([0, 34, -2.5]) buzzer();
+    color([0.8,0.4,0.8])translate([0, 34, -2.5]) buzzer();
     color([0.4,1,0.1])VL6180X(tolerance=tolerance);
     color([0.0,0.4,1])translate([0, 0, -4]) rotate([0, 0, 90])d1Mini32(tolerance=tolerance);
 }
 //d1Mini32();
-components();
+//components();
+
+batteryHolder();
