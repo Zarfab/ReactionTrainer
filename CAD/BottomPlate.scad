@@ -9,8 +9,9 @@ module BottomPlate() {
             //translate([0,0,2.9]) cylinder(d=86, h=3.1);
             translate([0,0,3]) difference() {
                 union() {
-                    cylinder(d=61.6, h=3);
-                    translate([0,0,2]) tore(mainRadius=30.8, circleRadius=0.55);
+                    space = 0.28;
+                    cylinder(d=62 - 2 * space, h=3);
+                    translate([0,0,2]) tore(mainRadius=31 - space - 0.2, circleRadius=0.5);
                 }
                 cylinder(d=56.8, h=3.1);
                 translate([31-1.8, 0, 0]) roundedRect(size=[7.2, 6, 4.4], radius=1.6);
