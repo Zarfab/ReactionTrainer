@@ -8,7 +8,7 @@ These modules are developed with the aim of creating exercises to improve athlet
 ### Bill of material
 (For each module)
 
-|Type|Reference|cost|Other information|
+|Part|Reference|cost|Other information|
 |----|----|----|----|
 |Micro-controller|ESP32 D1 Mini|3,80€|
 |Distance sensor|VL6180X|2.40€|[datasheet](https://www.st.com/resource/en/datasheet/vl6180x.pdf)

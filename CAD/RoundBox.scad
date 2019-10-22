@@ -38,7 +38,10 @@ module roundBox() {
             }
         }*/
         for(i=[0:3]) {
-            rotate([0, 0, 45 + 90*i]) translate([0, 37.2, -0.1]) #cylinder(d=10.5, h=2.3);
+            rotate([0, 0, 45 + 90*i]) translate([0, 37.2, -0.1]) cylinder(d=10.5, h=2.3);
+        }
+        for(i=[0:1]) {
+            rotate([0, 0, 55 + 180*i]) translate([0, 37.2, 4.5]) cube([24, 20, 2], center=true);
         }
         translate([0, 34, -0.5]) cylinder(d=12.8, h=38);
         translate([-6.4, 21, 20]) cube([12.8, 12, 14]);
